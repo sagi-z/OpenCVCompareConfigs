@@ -89,7 +89,7 @@ build_pkg () {
 		else
 			if [ -f "lib/libopencv_stitching.so.3.1.0" ]; then
 				echo "opencv 3.1.0 $my_build_name" > description-pak
-				echo | sudo checkinstall -D --install=no --pkgname=opencv --pkgversion=3.1.0 --provides=opencv --nodoc --addso=yes --backup=no --exclude=$HOME
+				echo | sudo checkinstall -D --install=no --pkgname=opencv --pkgversion=3.1.0 --provides=opencv --nodoc --backup=no --exclude=$HOME
 			else
 				fail_cont "Please fix build issues for '$my_build_name' before building a deb package"
 			fi
