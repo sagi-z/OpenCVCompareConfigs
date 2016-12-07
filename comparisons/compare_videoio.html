@@ -1,0 +1,771 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<title>Summary report for 17 tests from 4 test logs</title>
+<style type="text/css">
+html, body {font-family: Lucida Console, Courier New, Courier;font-size: 16px;color:#3e4758;}
+.tbl{background:none repeat scroll 0 0 #FFFFFF;border-collapse:collapse;font-family:"Lucida Sans Unicode","Lucida Grande",Sans-Serif;font-size:14px;margin:20px;text-align:left;width:480px;margin-left: auto;margin-right: auto;white-space:nowrap;}
+.tbl span{display:block;white-space:nowrap;}
+.tbl thead tr:last-child th {padding-bottom:5px;}
+.tbl tbody tr:first-child td {border-top:3px solid #6678B1;}
+.tbl th{border:none;color:#003399;font-size:16px;font-weight:normal;white-space:nowrap;padding:3px 10px;}
+.tbl td{border:none;border-bottom:1px solid #CCCCCC;color:#666699;padding:6px 8px;white-space:nowrap;}
+.tbl tbody tr:hover td{color:#000099;}
+.tbl caption{font:italic 16px "Trebuchet MS",Verdana,Arial,Helvetica,sans-serif;padding:0 0 5px;text-align:right;white-space:normal;}
+.firstingroup {border-top:2px solid #6678B1;}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script type="text/javascript">
+function abs(val) { return val < 0 ? -val : val }
+$(function(){
+  //generate filter rows
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+    var head = $("thead", tbl)
+    var filters = $("<tr></tr>")
+    var hasAny = false
+    $("tr:first th", head).each(function(colIdx, col) {
+      col = $(col)
+      var cell
+      var id = "t" + tblIdx + "r" + colIdx
+      if (col.hasClass("col_name")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_name' title='Regular expression for name filtering (&quot;resize.*640x480&quot; - resize tests on VGA resolution)'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_rel")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_rel' title='Filter out lines with a x-factor of acceleration less than Nx'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_cr")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_cr' title='Filter out lines with a percentage of acceleration less than N%'></input></th>")
+        hasAny = true
+      }
+      else
+        cell = $("<th></th>")
+      cell.appendTo(filters)
+    })
+
+   if (hasAny){
+     $(tbl).wrap("<form id='form_t" + tblIdx + "' method='get' action=''></form>")
+     $("<input it='test' type='submit' value='Apply Filters' style='margin-left:10px;'></input>")
+       .appendTo($("th:last", filters.appendTo(head)))
+   }
+  })
+
+  //get filter values
+  var vars = []
+  var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+  for(var i = 0; i < hashes.length; ++i)
+  {
+     hash = hashes[i].split('=')
+     vars.push(decodeURIComponent(hash[0]))
+     vars[decodeURIComponent(hash[0])] = decodeURIComponent(hash[1]);
+  }
+
+  //set filter values
+  for(var i = 0; i < vars.length; ++i)
+     $("#" + vars[i]).val(vars[vars[i]])
+
+  //apply filters
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+      filters = $("input:text", tbl)
+      var predicate = function(row) {return true;}
+      var empty = true
+      $.each($("input:text", tbl), function(i, flt) {
+         flt = $(flt)
+         var val = flt.val()
+         var pred = predicate;
+         if(val) {
+           empty = false
+           var colIdx = parseInt(flt.attr("id").slice(flt.attr("id").indexOf('r') + 1))
+           if(flt.hasClass("filter_col_name")) {
+              var re = new RegExp(val);
+              predicate = function(row) {
+                if (re.exec($(row.get(colIdx)).text()) == null)
+                  return false
+                return pred(row)
+          }
+           } else if(flt.hasClass("filter_col_rel")) {
+              var percent = parseFloat(val)
+              if (percent < 0) {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val >= 1 || val > 1+percent)
+                    return false
+                  return pred(row)
+            }
+              } else {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val < percent)
+                    return false
+                  return pred(row)
+            }
+              }
+           } else if(flt.hasClass("filter_col_cr")) {
+              var percent = parseFloat(val)
+              predicate = function(row) {
+                var val = parseFloat($(row.get(colIdx)).text())
+                if (!val || val < percent)
+                  return false
+                return pred(row)
+          }
+           }
+         }
+      });
+      if (!empty){
+         $("tbody tr", tbl).each(function (i, tbl_row) {
+            if(!predicate($("td", tbl_row)))
+               $(tbl_row).remove()
+         })
+         if($("tbody tr", tbl).length == 0) {
+           $("<tr><td colspan='"+$("thead tr:first th", tbl).length+"'>No results mathing your search criteria</td></tr>")
+             .appendTo($("tbody", tbl))
+         }
+      }
+  })
+})
+</script>
+</head>
+<body>
+<div class="tableFormatter">
+<table class="tbl">
+ <caption>Geometric mean</caption>
+ <thead>
+  <tr>
+   <th align="center" valign="top" class="col_name">
+    Name of Test
+   </th>
+   <th align="center" valign="top">
+    videoio<br/>build<br/>rpi3<br/>release
+   </th>
+   <th align="center" valign="top">
+    videoio<br/>build<br/>rpi3<br/>release<br/>fp
+   </th>
+   <th align="center" valign="top">
+    videoio<br/>build<br/>rpi3<br/>release<br/>tbb
+   </th>
+   <th align="center" valign="top">
+    videoio<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    videoio<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>videoio<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    videoio<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>videoio<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    videoio<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>videoio<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    videoio<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>videoio<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    videoio<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>videoio<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    videoio<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>videoio<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr class=" firstingroup">
+   <td>
+    ReadFile::VideoCapture_Reading::"highgui/video/big_buck_bunny.avi"
+   </td>
+   <td align="center">
+    7.833 ms
+   </td>
+   <td align="center" style="color:green;">
+    6.468 ms
+   </td>
+   <td align="center">
+    7.778 ms
+   </td>
+   <td align="center" style="color:green;">
+    6.523 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.21
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.20
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    ReadFile::VideoCapture_Reading::"highgui/video/big_buck_bunny.mov"
+   </td>
+   <td align="center">
+    13.003 ms
+   </td>
+   <td align="center">
+    13.015 ms
+   </td>
+   <td align="center" style="color:red;">
+    13.802 ms
+   </td>
+   <td align="center">
+    13.047 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    ReadFile::VideoCapture_Reading::"highgui/video/big_buck_bunny.mp4"
+   </td>
+   <td align="center">
+    13.056 ms
+   </td>
+   <td align="center">
+    12.995 ms
+   </td>
+   <td align="center">
+    13.413 ms
+   </td>
+   <td align="center">
+    13.029 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    ReadFile::VideoCapture_Reading::"highgui/video/big_buck_bunny.mpg"
+   </td>
+   <td align="center">
+    260.308 ms
+   </td>
+   <td align="center">
+    259.973 ms
+   </td>
+   <td align="center">
+    257.254 ms
+   </td>
+   <td align="center">
+    257.383 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    ReadFile::VideoCapture_Reading::"highgui/video/big_buck_bunny.wmv"
+   </td>
+   <td align="center">
+    4.702 ms
+   </td>
+   <td align="center" style="color:green;">
+    4.194 ms
+   </td>
+   <td align="center">
+    4.665 ms
+   </td>
+   <td align="center" style="color:green;">
+    4.245 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.12
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.11
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_00.bmp", false)
+   </td>
+   <td align="center">
+    0.192 ms
+   </td>
+   <td align="center">
+    0.196 ms
+   </td>
+   <td align="center">
+    0.195 ms
+   </td>
+   <td align="center">
+    0.198 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_00.bmp", true)
+   </td>
+   <td align="center">
+    1.809 ms
+   </td>
+   <td align="center">
+    1.811 ms
+   </td>
+   <td align="center">
+    1.852 ms
+   </td>
+   <td align="center">
+    1.842 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_01.bmp", false)
+   </td>
+   <td align="center">
+    0.193 ms
+   </td>
+   <td align="center">
+    0.194 ms
+   </td>
+   <td align="center">
+    0.199 ms
+   </td>
+   <td align="center">
+    0.193 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_01.bmp", true)
+   </td>
+   <td align="center">
+    1.772 ms
+   </td>
+   <td align="center">
+    1.786 ms
+   </td>
+   <td align="center">
+    1.803 ms
+   </td>
+   <td align="center">
+    1.780 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_02.bmp", false)
+   </td>
+   <td align="center">
+    0.192 ms
+   </td>
+   <td align="center">
+    0.196 ms
+   </td>
+   <td align="center">
+    0.197 ms
+   </td>
+   <td align="center">
+    0.195 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_02.bmp", true)
+   </td>
+   <td align="center">
+    1.803 ms
+   </td>
+   <td align="center">
+    1.813 ms
+   </td>
+   <td align="center">
+    1.818 ms
+   </td>
+   <td align="center">
+    1.848 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_03.bmp", false)
+   </td>
+   <td align="center">
+    0.194 ms
+   </td>
+   <td align="center">
+    0.197 ms
+   </td>
+   <td align="center">
+    0.199 ms
+   </td>
+   <td align="center">
+    0.196 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_03.bmp", true)
+   </td>
+   <td align="center">
+    1.800 ms
+   </td>
+   <td align="center">
+    1.809 ms
+   </td>
+   <td align="center">
+    1.852 ms
+   </td>
+   <td align="center">
+    1.822 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_04.bmp", false)
+   </td>
+   <td align="center">
+    0.192 ms
+   </td>
+   <td align="center">
+    0.195 ms
+   </td>
+   <td align="center">
+    0.197 ms
+   </td>
+   <td align="center">
+    0.200 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_04.bmp", true)
+   </td>
+   <td align="center">
+    1.766 ms
+   </td>
+   <td align="center">
+    1.779 ms
+   </td>
+   <td align="center">
+    1.794 ms
+   </td>
+   <td align="center">
+    1.802 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_05.bmp", false)
+   </td>
+   <td align="center">
+    0.193 ms
+   </td>
+   <td align="center">
+    0.195 ms
+   </td>
+   <td align="center">
+    0.197 ms
+   </td>
+   <td align="center">
+    0.199 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    WriteFrame::VideoWriter_Writing::("python/images/QCIF_05.bmp", true)
+   </td>
+   <td align="center">
+    1.776 ms
+   </td>
+   <td align="center">
+    1.793 ms
+   </td>
+   <td align="center">
+    1.814 ms
+   </td>
+   <td align="center">
+    1.798 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+ </tbody>
+</table>
+</div>
+</body>
+</html>

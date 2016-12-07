@@ -1,0 +1,1156 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<title>Summary report for 28 tests from 4 test logs</title>
+<style type="text/css">
+html, body {font-family: Lucida Console, Courier New, Courier;font-size: 16px;color:#3e4758;}
+.tbl{background:none repeat scroll 0 0 #FFFFFF;border-collapse:collapse;font-family:"Lucida Sans Unicode","Lucida Grande",Sans-Serif;font-size:14px;margin:20px;text-align:left;width:480px;margin-left: auto;margin-right: auto;white-space:nowrap;}
+.tbl span{display:block;white-space:nowrap;}
+.tbl thead tr:last-child th {padding-bottom:5px;}
+.tbl tbody tr:first-child td {border-top:3px solid #6678B1;}
+.tbl th{border:none;color:#003399;font-size:16px;font-weight:normal;white-space:nowrap;padding:3px 10px;}
+.tbl td{border:none;border-bottom:1px solid #CCCCCC;color:#666699;padding:6px 8px;white-space:nowrap;}
+.tbl tbody tr:hover td{color:#000099;}
+.tbl caption{font:italic 16px "Trebuchet MS",Verdana,Arial,Helvetica,sans-serif;padding:0 0 5px;text-align:right;white-space:normal;}
+.firstingroup {border-top:2px solid #6678B1;}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script type="text/javascript">
+function abs(val) { return val < 0 ? -val : val }
+$(function(){
+  //generate filter rows
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+    var head = $("thead", tbl)
+    var filters = $("<tr></tr>")
+    var hasAny = false
+    $("tr:first th", head).each(function(colIdx, col) {
+      col = $(col)
+      var cell
+      var id = "t" + tblIdx + "r" + colIdx
+      if (col.hasClass("col_name")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_name' title='Regular expression for name filtering (&quot;resize.*640x480&quot; - resize tests on VGA resolution)'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_rel")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_rel' title='Filter out lines with a x-factor of acceleration less than Nx'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_cr")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_cr' title='Filter out lines with a percentage of acceleration less than N%'></input></th>")
+        hasAny = true
+      }
+      else
+        cell = $("<th></th>")
+      cell.appendTo(filters)
+    })
+
+   if (hasAny){
+     $(tbl).wrap("<form id='form_t" + tblIdx + "' method='get' action=''></form>")
+     $("<input it='test' type='submit' value='Apply Filters' style='margin-left:10px;'></input>")
+       .appendTo($("th:last", filters.appendTo(head)))
+   }
+  })
+
+  //get filter values
+  var vars = []
+  var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+  for(var i = 0; i < hashes.length; ++i)
+  {
+     hash = hashes[i].split('=')
+     vars.push(decodeURIComponent(hash[0]))
+     vars[decodeURIComponent(hash[0])] = decodeURIComponent(hash[1]);
+  }
+
+  //set filter values
+  for(var i = 0; i < vars.length; ++i)
+     $("#" + vars[i]).val(vars[vars[i]])
+
+  //apply filters
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+      filters = $("input:text", tbl)
+      var predicate = function(row) {return true;}
+      var empty = true
+      $.each($("input:text", tbl), function(i, flt) {
+         flt = $(flt)
+         var val = flt.val()
+         var pred = predicate;
+         if(val) {
+           empty = false
+           var colIdx = parseInt(flt.attr("id").slice(flt.attr("id").indexOf('r') + 1))
+           if(flt.hasClass("filter_col_name")) {
+              var re = new RegExp(val);
+              predicate = function(row) {
+                if (re.exec($(row.get(colIdx)).text()) == null)
+                  return false
+                return pred(row)
+          }
+           } else if(flt.hasClass("filter_col_rel")) {
+              var percent = parseFloat(val)
+              if (percent < 0) {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val >= 1 || val > 1+percent)
+                    return false
+                  return pred(row)
+            }
+              } else {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val < percent)
+                    return false
+                  return pred(row)
+            }
+              }
+           } else if(flt.hasClass("filter_col_cr")) {
+              var percent = parseFloat(val)
+              predicate = function(row) {
+                var val = parseFloat($(row.get(colIdx)).text())
+                if (!val || val < percent)
+                  return false
+                return pred(row)
+          }
+           }
+         }
+      });
+      if (!empty){
+         $("tbody tr", tbl).each(function (i, tbl_row) {
+            if(!predicate($("td", tbl_row)))
+               $(tbl_row).remove()
+         })
+         if($("tbody tr", tbl).length == 0) {
+           $("<tr><td colspan='"+$("thead tr:first th", tbl).length+"'>No results mathing your search criteria</td></tr>")
+             .appendTo($("tbody", tbl))
+         }
+      }
+  })
+})
+</script>
+</head>
+<body>
+<div class="tableFormatter">
+<table class="tbl">
+ <caption>Geometric mean</caption>
+ <thead>
+  <tr>
+   <th align="center" valign="top" class="col_name">
+    Name of Test
+   </th>
+   <th align="center" valign="top">
+    objdetect<br/>build<br/>rpi3<br/>release
+   </th>
+   <th align="center" valign="top">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>fp
+   </th>
+   <th align="center" valign="top">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>tbb
+   </th>
+   <th align="center" valign="top">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>objdetect<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>objdetect<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>objdetect<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>objdetect<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>objdetect<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    objdetect<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>objdetect<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr class=" firstingroup">
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/cascadeandhog/images/bttf301.png", 30)
+   </td>
+   <td align="center">
+    258.273 ms
+   </td>
+   <td align="center" style="color:red;">
+    285.484 ms
+   </td>
+   <td align="center" style="color:red;">
+    302.182 ms
+   </td>
+   <td align="center" style="color:red;">
+    274.787 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.90
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.85
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/cascadeandhog/images/bttf301.png", 64)
+   </td>
+   <td align="center">
+    69.271 ms
+   </td>
+   <td align="center" style="color:red;">
+    75.161 ms
+   </td>
+   <td align="center" style="color:red;">
+    88.735 ms
+   </td>
+   <td align="center" style="color:red;">
+    79.239 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.78
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.87
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/cascadeandhog/images/bttf301.png", 90)
+   </td>
+   <td align="center">
+    26.325 ms
+   </td>
+   <td align="center" style="color:green;">
+    24.861 ms
+   </td>
+   <td align="center" style="color:red;">
+    29.678 ms
+   </td>
+   <td align="center">
+    26.494 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.89
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/cascadeandhog/images/class57.png", 30)
+   </td>
+   <td align="center">
+    2057.733 ms
+   </td>
+   <td align="center">
+    2153.390 ms
+   </td>
+   <td align="center" style="color:red;">
+    2306.636 ms
+   </td>
+   <td align="center">
+    2108.237 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.89
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/cascadeandhog/images/class57.png", 64)
+   </td>
+   <td align="center">
+    552.124 ms
+   </td>
+   <td align="center">
+    568.791 ms
+   </td>
+   <td align="center">
+    576.644 ms
+   </td>
+   <td align="center">
+    537.371 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/cascadeandhog/images/class57.png", 90)
+   </td>
+   <td align="center">
+    280.190 ms
+   </td>
+   <td align="center">
+    293.913 ms
+   </td>
+   <td align="center" style="color:red;">
+    312.579 ms
+   </td>
+   <td align="center">
+    289.537 ms
+   </td>
+   <td align="center">
+    0.95
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.90
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/shared/lena.png", 30)
+   </td>
+   <td align="center">
+    278.490 ms
+   </td>
+   <td align="center">
+    287.183 ms
+   </td>
+   <td align="center" style="color:red;">
+    321.390 ms
+   </td>
+   <td align="center">
+    289.803 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.87
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/shared/lena.png", 64)
+   </td>
+   <td align="center">
+    85.754 ms
+   </td>
+   <td align="center">
+    90.117 ms
+   </td>
+   <td align="center" style="color:red;">
+    99.134 ms
+   </td>
+   <td align="center">
+    90.210 ms
+   </td>
+   <td align="center">
+    0.95
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.87
+   </td>
+   <td align="center">
+    0.95
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt2.xml", "cv/shared/lena.png", 90)
+   </td>
+   <td align="center">
+    45.496 ms
+   </td>
+   <td align="center">
+    47.012 ms
+   </td>
+   <td align="center" style="color:red;">
+    54.526 ms
+   </td>
+   <td align="center" style="color:red;">
+    49.341 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.83
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/cascadeandhog/images/bttf301.png", 30)
+   </td>
+   <td align="center">
+    267.632 ms
+   </td>
+   <td align="center">
+    255.953 ms
+   </td>
+   <td align="center" style="color:red;">
+    331.889 ms
+   </td>
+   <td align="center" style="color:red;">
+    291.947 ms
+   </td>
+   <td align="center">
+    1.05
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.81
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/cascadeandhog/images/bttf301.png", 64)
+   </td>
+   <td align="center">
+    74.248 ms
+   </td>
+   <td align="center" style="color:green;">
+    70.258 ms
+   </td>
+   <td align="center" style="color:red;">
+    95.974 ms
+   </td>
+   <td align="center" style="color:red;">
+    86.064 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.77
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.86
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/cascadeandhog/images/bttf301.png", 90)
+   </td>
+   <td align="center">
+    24.892 ms
+   </td>
+   <td align="center" style="color:red;">
+    29.190 ms
+   </td>
+   <td align="center" style="color:red;">
+    31.239 ms
+   </td>
+   <td align="center" style="color:red;">
+    28.257 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.85
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.80
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.88
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/cascadeandhog/images/class57.png", 30)
+   </td>
+   <td align="center">
+    2188.670 ms
+   </td>
+   <td align="center">
+    2188.556 ms
+   </td>
+   <td align="center" style="color:red;">
+    2557.691 ms
+   </td>
+   <td align="center">
+    2261.622 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.86
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/cascadeandhog/images/class57.png", 64)
+   </td>
+   <td align="center">
+    596.669 ms
+   </td>
+   <td align="center">
+    608.436 ms
+   </td>
+   <td align="center" style="color:red;">
+    659.879 ms
+   </td>
+   <td align="center">
+    589.807 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.90
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/cascadeandhog/images/class57.png", 90)
+   </td>
+   <td align="center">
+    297.886 ms
+   </td>
+   <td align="center" style="color:red;">
+    315.631 ms
+   </td>
+   <td align="center" style="color:red;">
+    347.178 ms
+   </td>
+   <td align="center">
+    305.967 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.86
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/shared/lena.png", 30)
+   </td>
+   <td align="center">
+    272.257 ms
+   </td>
+   <td align="center">
+    281.029 ms
+   </td>
+   <td align="center" style="color:red;">
+    370.176 ms
+   </td>
+   <td align="center" style="color:red;">
+    344.256 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.74
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.79
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/shared/lena.png", 64)
+   </td>
+   <td align="center">
+    89.547 ms
+   </td>
+   <td align="center">
+    91.162 ms
+   </td>
+   <td align="center" style="color:red;">
+    116.430 ms
+   </td>
+   <td align="center" style="color:red;">
+    101.435 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.77
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.88
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/haarcascade_frontalface_alt.xml", "cv/shared/lena.png", 90)
+   </td>
+   <td align="center">
+    49.325 ms
+   </td>
+   <td align="center">
+    48.095 ms
+   </td>
+   <td align="center" style="color:red;">
+    60.502 ms
+   </td>
+   <td align="center" style="color:red;">
+    52.907 ms
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.82
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.93
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/cascadeandhog/images/bttf301.png", 30)
+   </td>
+   <td align="center">
+    126.041 ms
+   </td>
+   <td align="center" style="color:red;">
+    137.774 ms
+   </td>
+   <td align="center" style="color:red;">
+    143.932 ms
+   </td>
+   <td align="center" style="color:red;">
+    136.197 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.91
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.88
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.93
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/cascadeandhog/images/bttf301.png", 64)
+   </td>
+   <td align="center">
+    37.406 ms
+   </td>
+   <td align="center" style="color:red;">
+    40.935 ms
+   </td>
+   <td align="center" style="color:red;">
+    40.777 ms
+   </td>
+   <td align="center">
+    39.217 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.91
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center">
+    0.95
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/cascadeandhog/images/bttf301.png", 90)
+   </td>
+   <td align="center">
+    18.481 ms
+   </td>
+   <td align="center">
+    18.345 ms
+   </td>
+   <td align="center" style="color:red;">
+    20.114 ms
+   </td>
+   <td align="center">
+    19.245 ms
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/cascadeandhog/images/class57.png", 30)
+   </td>
+   <td align="center">
+    1139.914 ms
+   </td>
+   <td align="center">
+    1199.376 ms
+   </td>
+   <td align="center" style="color:red;">
+    1211.196 ms
+   </td>
+   <td align="center">
+    1112.274 ms
+   </td>
+   <td align="center">
+    0.95
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/cascadeandhog/images/class57.png", 64)
+   </td>
+   <td align="center">
+    263.821 ms
+   </td>
+   <td align="center">
+    272.216 ms
+   </td>
+   <td align="center" style="color:red;">
+    303.846 ms
+   </td>
+   <td align="center">
+    272.793 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.87
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/cascadeandhog/images/class57.png", 90)
+   </td>
+   <td align="center">
+    143.007 ms
+   </td>
+   <td align="center">
+    147.613 ms
+   </td>
+   <td align="center" style="color:red;">
+    166.510 ms
+   </td>
+   <td align="center" style="color:red;">
+    155.850 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.86
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/shared/lena.png", 30)
+   </td>
+   <td align="center">
+    121.879 ms
+   </td>
+   <td align="center">
+    125.292 ms
+   </td>
+   <td align="center" style="color:red;">
+    131.691 ms
+   </td>
+   <td align="center">
+    117.905 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.93
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/shared/lena.png", 64)
+   </td>
+   <td align="center">
+    44.224 ms
+   </td>
+   <td align="center" style="color:red;">
+    48.079 ms
+   </td>
+   <td align="center" style="color:red;">
+    54.210 ms
+   </td>
+   <td align="center" style="color:red;">
+    48.685 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.82
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.91
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    CascadeClassifier::OCL_Cascade_Image_MinSize::("cv/cascadeandhog/cascades/lbpcascade_frontalface.xml", "cv/shared/lena.png", 90)
+   </td>
+   <td align="center">
+    21.375 ms
+   </td>
+   <td align="center">
+    21.217 ms
+   </td>
+   <td align="center" style="color:red;">
+    24.877 ms
+   </td>
+   <td align="center" style="color:green;">
+    19.796 ms
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.86
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.08
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    HOG::OCL_HOGFixture
+   </td>
+   <td align="center">
+    1028.208 ms
+   </td>
+   <td align="center" style="color:green;">
+    947.064 ms
+   </td>
+   <td align="center" style="color:red;">
+    1423.821 ms
+   </td>
+   <td align="center" style="color:red;">
+    1150.749 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.09
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.72
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.89
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+ </tbody>
+</table>
+</div>
+</body>
+</html>

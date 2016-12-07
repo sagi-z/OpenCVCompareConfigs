@@ -1,0 +1,1541 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<title>Summary report for 42 tests from 4 test logs</title>
+<style type="text/css">
+html, body {font-family: Lucida Console, Courier New, Courier;font-size: 16px;color:#3e4758;}
+.tbl{background:none repeat scroll 0 0 #FFFFFF;border-collapse:collapse;font-family:"Lucida Sans Unicode","Lucida Grande",Sans-Serif;font-size:14px;margin:20px;text-align:left;width:480px;margin-left: auto;margin-right: auto;white-space:nowrap;}
+.tbl span{display:block;white-space:nowrap;}
+.tbl thead tr:last-child th {padding-bottom:5px;}
+.tbl tbody tr:first-child td {border-top:3px solid #6678B1;}
+.tbl th{border:none;color:#003399;font-size:16px;font-weight:normal;white-space:nowrap;padding:3px 10px;}
+.tbl td{border:none;border-bottom:1px solid #CCCCCC;color:#666699;padding:6px 8px;white-space:nowrap;}
+.tbl tbody tr:hover td{color:#000099;}
+.tbl caption{font:italic 16px "Trebuchet MS",Verdana,Arial,Helvetica,sans-serif;padding:0 0 5px;text-align:right;white-space:normal;}
+.firstingroup {border-top:2px solid #6678B1;}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script type="text/javascript">
+function abs(val) { return val < 0 ? -val : val }
+$(function(){
+  //generate filter rows
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+    var head = $("thead", tbl)
+    var filters = $("<tr></tr>")
+    var hasAny = false
+    $("tr:first th", head).each(function(colIdx, col) {
+      col = $(col)
+      var cell
+      var id = "t" + tblIdx + "r" + colIdx
+      if (col.hasClass("col_name")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_name' title='Regular expression for name filtering (&quot;resize.*640x480&quot; - resize tests on VGA resolution)'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_rel")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_rel' title='Filter out lines with a x-factor of acceleration less than Nx'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_cr")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_cr' title='Filter out lines with a percentage of acceleration less than N%'></input></th>")
+        hasAny = true
+      }
+      else
+        cell = $("<th></th>")
+      cell.appendTo(filters)
+    })
+
+   if (hasAny){
+     $(tbl).wrap("<form id='form_t" + tblIdx + "' method='get' action=''></form>")
+     $("<input it='test' type='submit' value='Apply Filters' style='margin-left:10px;'></input>")
+       .appendTo($("th:last", filters.appendTo(head)))
+   }
+  })
+
+  //get filter values
+  var vars = []
+  var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+  for(var i = 0; i < hashes.length; ++i)
+  {
+     hash = hashes[i].split('=')
+     vars.push(decodeURIComponent(hash[0]))
+     vars[decodeURIComponent(hash[0])] = decodeURIComponent(hash[1]);
+  }
+
+  //set filter values
+  for(var i = 0; i < vars.length; ++i)
+     $("#" + vars[i]).val(vars[vars[i]])
+
+  //apply filters
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+      filters = $("input:text", tbl)
+      var predicate = function(row) {return true;}
+      var empty = true
+      $.each($("input:text", tbl), function(i, flt) {
+         flt = $(flt)
+         var val = flt.val()
+         var pred = predicate;
+         if(val) {
+           empty = false
+           var colIdx = parseInt(flt.attr("id").slice(flt.attr("id").indexOf('r') + 1))
+           if(flt.hasClass("filter_col_name")) {
+              var re = new RegExp(val);
+              predicate = function(row) {
+                if (re.exec($(row.get(colIdx)).text()) == null)
+                  return false
+                return pred(row)
+          }
+           } else if(flt.hasClass("filter_col_rel")) {
+              var percent = parseFloat(val)
+              if (percent < 0) {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val >= 1 || val > 1+percent)
+                    return false
+                  return pred(row)
+            }
+              } else {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val < percent)
+                    return false
+                  return pred(row)
+            }
+              }
+           } else if(flt.hasClass("filter_col_cr")) {
+              var percent = parseFloat(val)
+              predicate = function(row) {
+                var val = parseFloat($(row.get(colIdx)).text())
+                if (!val || val < percent)
+                  return false
+                return pred(row)
+          }
+           }
+         }
+      });
+      if (!empty){
+         $("tbody tr", tbl).each(function (i, tbl_row) {
+            if(!predicate($("td", tbl_row)))
+               $(tbl_row).remove()
+         })
+         if($("tbody tr", tbl).length == 0) {
+           $("<tr><td colspan='"+$("thead tr:first th", tbl).length+"'>No results mathing your search criteria</td></tr>")
+             .appendTo($("tbody", tbl))
+         }
+      }
+  })
+})
+</script>
+</head>
+<body>
+<div class="tableFormatter">
+<table class="tbl">
+ <caption>Geometric mean</caption>
+ <thead>
+  <tr>
+   <th align="center" valign="top" class="col_name">
+    Name of Test
+   </th>
+   <th align="center" valign="top">
+    calib3d<br/>build<br/>rpi3<br/>release
+   </th>
+   <th align="center" valign="top">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>fp
+   </th>
+   <th align="center" valign="top">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>tbb
+   </th>
+   <th align="center" valign="top">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>calib3d<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>calib3d<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>calib3d<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>calib3d<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>calib3d<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    calib3d<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>calib3d<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr class=" firstingroup">
+   <td>
+    SGBM::TestStereoCorresp::(640x480, 128, StereoSGBM::MODE_SGBM)
+   </td>
+   <td align="center">
+    7152.477 ms
+   </td>
+   <td align="center" style="color:green;">
+    5405.647 ms
+   </td>
+   <td align="center">
+    7129.494 ms
+   </td>
+   <td align="center" style="color:green;">
+    5386.559 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.32
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.33
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    SGBM::TestStereoCorresp::(640x480, 128, StereoSGBM::MODE_SGBM_3WAY)
+   </td>
+   <td align="center">
+    2560.445 ms
+   </td>
+   <td align="center" style="color:green;">
+    682.158 ms
+   </td>
+   <td align="center">
+    2601.956 ms
+   </td>
+   <td align="center" style="color:green;">
+    686.749 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.75
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.73
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    SGBM::TestStereoCorresp::(640x480, 256, StereoSGBM::MODE_SGBM)
+   </td>
+   <td align="center">
+    10578.006 ms
+   </td>
+   <td align="center" style="color:green;">
+    8012.760 ms
+   </td>
+   <td align="center">
+    10583.032 ms
+   </td>
+   <td align="center" style="color:green;">
+    7991.444 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.32
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.32
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    SGBM::TestStereoCorresp::(640x480, 256, StereoSGBM::MODE_SGBM_3WAY)
+   </td>
+   <td align="center">
+    3772.628 ms
+   </td>
+   <td align="center" style="color:green;">
+    1129.313 ms
+   </td>
+   <td align="center">
+    3894.882 ms
+   </td>
+   <td align="center" style="color:green;">
+    1137.044 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.34
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.32
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    SGBM::TestStereoCorresp::(1280x720, 128, StereoSGBM::MODE_SGBM)
+   </td>
+   <td align="center">
+    24394.275 ms
+   </td>
+   <td align="center" style="color:green;">
+    18578.797 ms
+   </td>
+   <td align="center">
+    24416.427 ms
+   </td>
+   <td align="center" style="color:green;">
+    18551.536 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.31
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.31
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    SGBM::TestStereoCorresp::(1280x720, 128, StereoSGBM::MODE_SGBM_3WAY)
+   </td>
+   <td align="center">
+    8798.740 ms
+   </td>
+   <td align="center" style="color:green;">
+    3105.460 ms
+   </td>
+   <td align="center">
+    9117.732 ms
+   </td>
+   <td align="center" style="color:green;">
+    3117.042 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.83
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.82
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    SGBM::TestStereoCorresp::(1280x720, 256, StereoSGBM::MODE_SGBM)
+   </td>
+   <td align="center">
+    42405.519 ms
+   </td>
+   <td align="center" style="color:green;">
+    32220.984 ms
+   </td>
+   <td align="center">
+    42172.286 ms
+   </td>
+   <td align="center" style="color:green;">
+    32275.839 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.32
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.31
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    SGBM::TestStereoCorresp::(1280x720, 256, StereoSGBM::MODE_SGBM_3WAY)
+   </td>
+   <td align="center">
+    15236.231 ms
+   </td>
+   <td align="center" style="color:green;">
+    5473.527 ms
+   </td>
+   <td align="center">
+    15869.825 ms
+   </td>
+   <td align="center" style="color:green;">
+    5536.927 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.78
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.75
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    StereoBM::OCL_StereoBMFixture::(32, 11)
+   </td>
+   <td align="center">
+    154.736 ms
+   </td>
+   <td align="center" style="color:green;">
+    58.719 ms
+   </td>
+   <td align="center">
+    147.830 ms
+   </td>
+   <td align="center" style="color:green;">
+    58.186 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.64
+   </td>
+   <td align="center">
+    1.05
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StereoBM::OCL_StereoBMFixture::(32, 21)
+   </td>
+   <td align="center">
+    156.587 ms
+   </td>
+   <td align="center" style="color:green;">
+    70.402 ms
+   </td>
+   <td align="center">
+    159.345 ms
+   </td>
+   <td align="center" style="color:green;">
+    69.271 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.22
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.26
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StereoBM::OCL_StereoBMFixture::(64, 11)
+   </td>
+   <td align="center">
+    256.016 ms
+   </td>
+   <td align="center" style="color:green;">
+    107.879 ms
+   </td>
+   <td align="center">
+    258.956 ms
+   </td>
+   <td align="center" style="color:green;">
+    106.849 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.37
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.40
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StereoBM::OCL_StereoBMFixture::(64, 21)
+   </td>
+   <td align="center">
+    268.244 ms
+   </td>
+   <td align="center" style="color:green;">
+    113.464 ms
+   </td>
+   <td align="center">
+    267.354 ms
+   </td>
+   <td align="center" style="color:green;">
+    114.813 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.36
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.34
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StereoBM::OCL_StereoBMFixture::(128, 11)
+   </td>
+   <td align="center">
+    446.430 ms
+   </td>
+   <td align="center" style="color:green;">
+    184.755 ms
+   </td>
+   <td align="center">
+    447.130 ms
+   </td>
+   <td align="center" style="color:green;">
+    185.119 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.42
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.41
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StereoBM::OCL_StereoBMFixture::(128, 21)
+   </td>
+   <td align="center">
+    486.277 ms
+   </td>
+   <td align="center" style="color:green;">
+    231.940 ms
+   </td>
+   <td align="center">
+    482.726 ms
+   </td>
+   <td align="center" style="color:green;">
+    227.068 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.10
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.14
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles1.png", 7x13)
+   </td>
+   <td align="center">
+    151.374 ms
+   </td>
+   <td align="center" style="color:green;">
+    125.650 ms
+   </td>
+   <td align="center">
+    148.624 ms
+   </td>
+   <td align="center" style="color:green;">
+    122.609 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.20
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.23
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles2.png", 7x13)
+   </td>
+   <td align="center">
+    172.440 ms
+   </td>
+   <td align="center" style="color:green;">
+    147.125 ms
+   </td>
+   <td align="center">
+    174.499 ms
+   </td>
+   <td align="center" style="color:green;">
+    144.298 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.17
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.20
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles3.png", 7x13)
+   </td>
+   <td align="center">
+    169.816 ms
+   </td>
+   <td align="center" style="color:green;">
+    148.870 ms
+   </td>
+   <td align="center">
+    176.773 ms
+   </td>
+   <td align="center" style="color:green;">
+    147.461 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.14
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.15
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles4.png", 5x5)
+   </td>
+   <td align="center">
+    103.674 ms
+   </td>
+   <td align="center" style="color:green;">
+    87.417 ms
+   </td>
+   <td align="center" style="color:red;">
+    111.743 ms
+   </td>
+   <td align="center" style="color:green;">
+    86.913 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.19
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.93
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.19
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles5.png", 5x5)
+   </td>
+   <td align="center">
+    100.808 ms
+   </td>
+   <td align="center" style="color:green;">
+    86.579 ms
+   </td>
+   <td align="center" style="color:red;">
+    109.949 ms
+   </td>
+   <td align="center" style="color:green;">
+    85.362 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.16
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.18
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles6.png", 5x5)
+   </td>
+   <td align="center">
+    114.808 ms
+   </td>
+   <td align="center" style="color:green;">
+    91.797 ms
+   </td>
+   <td align="center">
+    115.029 ms
+   </td>
+   <td align="center" style="color:green;">
+    89.832 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.25
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.28
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles7.png", 3x9)
+   </td>
+   <td align="center">
+    125.456 ms
+   </td>
+   <td align="center" style="color:green;">
+    100.340 ms
+   </td>
+   <td align="center">
+    125.218 ms
+   </td>
+   <td align="center" style="color:green;">
+    98.599 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.25
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.27
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles8.png", 3x9)
+   </td>
+   <td align="center">
+    117.492 ms
+   </td>
+   <td align="center" style="color:green;">
+    93.538 ms
+   </td>
+   <td align="center">
+    117.563 ms
+   </td>
+   <td align="center" style="color:green;">
+    91.862 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.26
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.28
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    asymm_circles_grid::String_Size::("cv/cameracalibration/asymmetric_circles/acircles9.png", 3x9)
+   </td>
+   <td align="center">
+    101.840 ms
+   </td>
+   <td align="center" style="color:green;">
+    88.139 ms
+   </td>
+   <td align="center" style="color:red;">
+    110.167 ms
+   </td>
+   <td align="center" style="color:green;">
+    85.345 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.16
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.92
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.19
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    solvePnP::PointsNum_Algo::(5, SOLVEPNP_DLS)
+   </td>
+   <td align="center">
+    0.694 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.421 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.602 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.419 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.65
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.15
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.65
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(5, SOLVEPNP_EPNP)
+   </td>
+   <td align="center">
+    0.699 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.421 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.602 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.418 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.16
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.67
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(5, SOLVEPNP_ITERATIVE)
+   </td>
+   <td align="center">
+    6.623 ms
+   </td>
+   <td align="center" style="color:green;">
+    3.988 ms
+   </td>
+   <td align="center" style="color:green;">
+    5.822 ms
+   </td>
+   <td align="center" style="color:green;">
+    4.052 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.14
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.63
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(5, SOLVEPNP_UPNP)
+   </td>
+   <td align="center">
+    0.694 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.419 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.606 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.422 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.15
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.65
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(27, SOLVEPNP_DLS)
+   </td>
+   <td align="center">
+    0.766 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.462 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.675 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.466 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.13
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(27, SOLVEPNP_EPNP)
+   </td>
+   <td align="center">
+    0.764 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.463 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.670 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.466 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.65
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.14
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(27, SOLVEPNP_ITERATIVE)
+   </td>
+   <td align="center">
+    1.186 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.722 ms
+   </td>
+   <td align="center" style="color:green;">
+    1.047 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.725 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.13
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(27, SOLVEPNP_UPNP)
+   </td>
+   <td align="center">
+    0.765 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.461 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.674 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.465 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.13
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(91, SOLVEPNP_DLS)
+   </td>
+   <td align="center">
+    0.997 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.607 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.888 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.608 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.12
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(91, SOLVEPNP_EPNP)
+   </td>
+   <td align="center">
+    0.994 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.609 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.877 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.608 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.63
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.13
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(91, SOLVEPNP_ITERATIVE)
+   </td>
+   <td align="center">
+    3.845 ms
+   </td>
+   <td align="center" style="color:green;">
+    2.331 ms
+   </td>
+   <td align="center" style="color:green;">
+    3.393 ms
+   </td>
+   <td align="center" style="color:green;">
+    2.341 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.65
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.13
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnP::PointsNum_Algo::(91, SOLVEPNP_UPNP)
+   </td>
+   <td align="center">
+    0.994 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.608 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.887 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.606 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.63
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.12
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    solvePnPSmallPoints::PointsNum_Algo::(5, SOLVEPNP_DLS)
+   </td>
+   <td align="center">
+    0.691 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.418 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.614 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.420 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.65
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.12
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnPSmallPoints::PointsNum_Algo::(5, SOLVEPNP_EPNP)
+   </td>
+   <td align="center">
+    0.693 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.423 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.610 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.422 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.14
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnPSmallPoints::PointsNum_Algo::(5, SOLVEPNP_P3P)
+   </td>
+   <td align="center">
+    0.090 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.054 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.079 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.055 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.14
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.66
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    solvePnPSmallPoints::PointsNum_Algo::(5, SOLVEPNP_UPNP)
+   </td>
+   <td align="center">
+    0.691 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.418 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.613 ms
+   </td>
+   <td align="center" style="color:green;">
+    0.420 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.65
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.13
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.64
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+ </tbody>
+</table>
+</div>
+</body>
+</html>

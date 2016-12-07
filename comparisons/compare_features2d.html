@@ -1,0 +1,1961 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<title>Summary report for 59 tests from 4 test logs</title>
+<style type="text/css">
+html, body {font-family: Lucida Console, Courier New, Courier;font-size: 16px;color:#3e4758;}
+.tbl{background:none repeat scroll 0 0 #FFFFFF;border-collapse:collapse;font-family:"Lucida Sans Unicode","Lucida Grande",Sans-Serif;font-size:14px;margin:20px;text-align:left;width:480px;margin-left: auto;margin-right: auto;white-space:nowrap;}
+.tbl span{display:block;white-space:nowrap;}
+.tbl thead tr:last-child th {padding-bottom:5px;}
+.tbl tbody tr:first-child td {border-top:3px solid #6678B1;}
+.tbl th{border:none;color:#003399;font-size:16px;font-weight:normal;white-space:nowrap;padding:3px 10px;}
+.tbl td{border:none;border-bottom:1px solid #CCCCCC;color:#666699;padding:6px 8px;white-space:nowrap;}
+.tbl tbody tr:hover td{color:#000099;}
+.tbl caption{font:italic 16px "Trebuchet MS",Verdana,Arial,Helvetica,sans-serif;padding:0 0 5px;text-align:right;white-space:normal;}
+.firstingroup {border-top:2px solid #6678B1;}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script type="text/javascript">
+function abs(val) { return val < 0 ? -val : val }
+$(function(){
+  //generate filter rows
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+    var head = $("thead", tbl)
+    var filters = $("<tr></tr>")
+    var hasAny = false
+    $("tr:first th", head).each(function(colIdx, col) {
+      col = $(col)
+      var cell
+      var id = "t" + tblIdx + "r" + colIdx
+      if (col.hasClass("col_name")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_name' title='Regular expression for name filtering (&quot;resize.*640x480&quot; - resize tests on VGA resolution)'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_rel")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_rel' title='Filter out lines with a x-factor of acceleration less than Nx'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_cr")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_cr' title='Filter out lines with a percentage of acceleration less than N%'></input></th>")
+        hasAny = true
+      }
+      else
+        cell = $("<th></th>")
+      cell.appendTo(filters)
+    })
+
+   if (hasAny){
+     $(tbl).wrap("<form id='form_t" + tblIdx + "' method='get' action=''></form>")
+     $("<input it='test' type='submit' value='Apply Filters' style='margin-left:10px;'></input>")
+       .appendTo($("th:last", filters.appendTo(head)))
+   }
+  })
+
+  //get filter values
+  var vars = []
+  var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+  for(var i = 0; i < hashes.length; ++i)
+  {
+     hash = hashes[i].split('=')
+     vars.push(decodeURIComponent(hash[0]))
+     vars[decodeURIComponent(hash[0])] = decodeURIComponent(hash[1]);
+  }
+
+  //set filter values
+  for(var i = 0; i < vars.length; ++i)
+     $("#" + vars[i]).val(vars[vars[i]])
+
+  //apply filters
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+      filters = $("input:text", tbl)
+      var predicate = function(row) {return true;}
+      var empty = true
+      $.each($("input:text", tbl), function(i, flt) {
+         flt = $(flt)
+         var val = flt.val()
+         var pred = predicate;
+         if(val) {
+           empty = false
+           var colIdx = parseInt(flt.attr("id").slice(flt.attr("id").indexOf('r') + 1))
+           if(flt.hasClass("filter_col_name")) {
+              var re = new RegExp(val);
+              predicate = function(row) {
+                if (re.exec($(row.get(colIdx)).text()) == null)
+                  return false
+                return pred(row)
+          }
+           } else if(flt.hasClass("filter_col_rel")) {
+              var percent = parseFloat(val)
+              if (percent < 0) {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val >= 1 || val > 1+percent)
+                    return false
+                  return pred(row)
+            }
+              } else {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val < percent)
+                    return false
+                  return pred(row)
+            }
+              }
+           } else if(flt.hasClass("filter_col_cr")) {
+              var percent = parseFloat(val)
+              predicate = function(row) {
+                var val = parseFloat($(row.get(colIdx)).text())
+                if (!val || val < percent)
+                  return false
+                return pred(row)
+          }
+           }
+         }
+      });
+      if (!empty){
+         $("tbody tr", tbl).each(function (i, tbl_row) {
+            if(!predicate($("td", tbl_row)))
+               $(tbl_row).remove()
+         })
+         if($("tbody tr", tbl).length == 0) {
+           $("<tr><td colspan='"+$("thead tr:first th", tbl).length+"'>No results mathing your search criteria</td></tr>")
+             .appendTo($("tbody", tbl))
+         }
+      }
+  })
+})
+</script>
+</head>
+<body>
+<div class="tableFormatter">
+<table class="tbl">
+ <caption>Geometric mean</caption>
+ <thead>
+  <tr>
+   <th align="center" valign="top" class="col_name">
+    Name of Test
+   </th>
+   <th align="center" valign="top">
+    features2d<br/>build<br/>rpi3<br/>release
+   </th>
+   <th align="center" valign="top">
+    features2d<br/>build<br/>rpi3<br/>release<br/>fp
+   </th>
+   <th align="center" valign="top">
+    features2d<br/>build<br/>rpi3<br/>release<br/>tbb
+   </th>
+   <th align="center" valign="top">
+    features2d<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    features2d<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>features2d<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    features2d<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>features2d<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    features2d<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>features2d<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    features2d<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>features2d<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    features2d<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>features2d<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    features2d<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>features2d<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr class=" firstingroup">
+   <td>
+    FastDetect::OCL_FASTFixture::("cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png", TYPE_5_8)
+   </td>
+   <td align="center">
+    19.128 ms
+   </td>
+   <td align="center">
+    19.879 ms
+   </td>
+   <td align="center">
+    18.663 ms
+   </td>
+   <td align="center">
+    18.343 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    FastDetect::OCL_FASTFixture::("cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png", TYPE_7_12)
+   </td>
+   <td align="center">
+    38.366 ms
+   </td>
+   <td align="center">
+    39.343 ms
+   </td>
+   <td align="center">
+    37.428 ms
+   </td>
+   <td align="center">
+    36.863 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    FastDetect::OCL_FASTFixture::("stitching/a3.png", TYPE_5_8)
+   </td>
+   <td align="center">
+    12.927 ms
+   </td>
+   <td align="center">
+    13.303 ms
+   </td>
+   <td align="center">
+    12.724 ms
+   </td>
+   <td align="center">
+    12.597 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    FastDetect::OCL_FASTFixture::("stitching/a3.png", TYPE_7_12)
+   </td>
+   <td align="center">
+    22.727 ms
+   </td>
+   <td align="center">
+    23.315 ms
+   </td>
+   <td align="center">
+    22.148 ms
+   </td>
+   <td align="center">
+    21.918 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    faster
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    KnnMatch::OCL_BruteForceMatcherFixture::(640x480, 32FC1)
+   </td>
+   <td align="center">
+    384.444 ms
+   </td>
+   <td align="center">
+    400.047 ms
+   </td>
+   <td align="center">
+    378.086 ms
+   </td>
+   <td align="center">
+    375.640 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    KnnMatch::OCL_BruteForceMatcherFixture::(1280x720, 32FC1)
+   </td>
+   <td align="center">
+    1768.271 ms
+   </td>
+   <td align="center" style="color:red;">
+    1875.917 ms
+   </td>
+   <td align="center">
+    1695.180 ms
+   </td>
+   <td align="center" style="color:green;">
+    1682.824 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.05
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    KnnMatch::OCL_BruteForceMatcherFixture::(1920x1080, 32FC1)
+   </td>
+   <td align="center">
+    6036.764 ms
+   </td>
+   <td align="center" style="color:red;">
+    6432.493 ms
+   </td>
+   <td align="center">
+    5862.254 ms
+   </td>
+   <td align="center">
+    5822.800 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+    faster
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    Match::OCL_BruteForceMatcherFixture::(640x480, 32FC1)
+   </td>
+   <td align="center">
+    260.387 ms
+   </td>
+   <td align="center" style="color:red;">
+    365.936 ms
+   </td>
+   <td align="center">
+    260.099 ms
+   </td>
+   <td align="center">
+    259.404 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.71
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    Match::OCL_BruteForceMatcherFixture::(1280x720, 32FC1)
+   </td>
+   <td align="center">
+    1610.345 ms
+   </td>
+   <td align="center" style="color:red;">
+    1808.214 ms
+   </td>
+   <td align="center" style="color:green;">
+    1467.176 ms
+   </td>
+   <td align="center" style="color:green;">
+    1515.093 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.89
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.10
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    Match::OCL_BruteForceMatcherFixture::(1920x1080, 32FC1)
+   </td>
+   <td align="center">
+    5933.278 ms
+   </td>
+   <td align="center" style="color:red;">
+    6290.995 ms
+   </td>
+   <td align="center">
+    5710.036 ms
+   </td>
+   <td align="center">
+    5714.430 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+    faster
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    ORB_Detect::OCL_ORBFixture::"cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png"
+   </td>
+   <td align="center">
+    51.287 ms
+   </td>
+   <td align="center">
+    53.614 ms
+   </td>
+   <td align="center">
+    50.637 ms
+   </td>
+   <td align="center">
+    49.563 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    ORB_Detect::OCL_ORBFixture::"stitching/a3.png"
+   </td>
+   <td align="center">
+    36.300 ms
+   </td>
+   <td align="center" style="color:red;">
+    38.295 ms
+   </td>
+   <td align="center">
+    36.014 ms
+   </td>
+   <td align="center">
+    35.273 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.95
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    ORB_Extract::OCL_ORBFixture::"cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png"
+   </td>
+   <td align="center">
+    53.752 ms
+   </td>
+   <td align="center" style="color:green;">
+    49.618 ms
+   </td>
+   <td align="center">
+    53.348 ms
+   </td>
+   <td align="center" style="color:green;">
+    45.526 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.08
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.18
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    ORB_Extract::OCL_ORBFixture::"stitching/a3.png"
+   </td>
+   <td align="center">
+    45.379 ms
+   </td>
+   <td align="center">
+    43.643 ms
+   </td>
+   <td align="center">
+    45.475 ms
+   </td>
+   <td align="center" style="color:green;">
+    39.552 ms
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.15
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    ORB_Full::OCL_ORBFixture::"cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png"
+   </td>
+   <td align="center">
+    86.944 ms
+   </td>
+   <td align="center" style="color:red;">
+    failed
+   </td>
+   <td align="center">
+    87.527 ms
+   </td>
+   <td align="center" style="color:red;">
+    failed
+   </td>
+   <td align="center" style="color:red;">
+    -
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:red;">
+    -
+   </td>
+   <td align="center" style="color:red;">
+    -
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;">
+    -
+   </td>
+  </tr>
+  <tr>
+   <td>
+    ORB_Full::OCL_ORBFixture::"stitching/a3.png"
+   </td>
+   <td align="center">
+    70.968 ms
+   </td>
+   <td align="center">
+    71.001 ms
+   </td>
+   <td align="center">
+    70.666 ms
+   </td>
+   <td align="center" style="color:green;">
+    66.151 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.07
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    RadiusMatch::OCL_BruteForceMatcherFixture::(640x480, 32FC1)
+   </td>
+   <td align="center">
+    391.000 ms
+   </td>
+   <td align="center">
+    405.432 ms
+   </td>
+   <td align="center">
+    386.406 ms
+   </td>
+   <td align="center">
+    378.110 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    RadiusMatch::OCL_BruteForceMatcherFixture::(1280x720, 32FC1)
+   </td>
+   <td align="center">
+    1794.750 ms
+   </td>
+   <td align="center" style="color:red;">
+    1900.006 ms
+   </td>
+   <td align="center">
+    1731.775 ms
+   </td>
+   <td align="center" style="color:green;">
+    1706.459 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.05
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    RadiusMatch::OCL_BruteForceMatcherFixture::(1920x1080, 32FC1)
+   </td>
+   <td align="center">
+    6155.662 ms
+   </td>
+   <td align="center">
+    6472.812 ms
+   </td>
+   <td align="center">
+    5964.211 ms
+   </td>
+   <td align="center">
+    5917.779 ms
+   </td>
+   <td align="center">
+    0.95
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L1, 32SC1, false)
+   </td>
+   <td align="center">
+    258.501 ms
+   </td>
+   <td align="center" style="color:green;">
+    96.286 ms
+   </td>
+   <td align="center" style="color:green;">
+    246.118 ms
+   </td>
+   <td align="center" style="color:green;">
+    84.521 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.68
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.05
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.06
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L1, 32SC1, true)
+   </td>
+   <td align="center">
+    266.601 ms
+   </td>
+   <td align="center" style="color:green;">
+    97.602 ms
+   </td>
+   <td align="center">
+    269.338 ms
+   </td>
+   <td align="center" style="color:green;">
+    110.193 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.73
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    2.42
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L1, 32FC1, false)
+   </td>
+   <td align="center">
+    470.615 ms
+   </td>
+   <td align="center">
+    451.193 ms
+   </td>
+   <td align="center">
+    452.517 ms
+   </td>
+   <td align="center" style="color:green;">
+    425.211 ms
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.11
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L1, 32FC1, true)
+   </td>
+   <td align="center">
+    430.749 ms
+   </td>
+   <td align="center">
+    443.362 ms
+   </td>
+   <td align="center">
+    434.174 ms
+   </td>
+   <td align="center">
+    423.668 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L2SQR, 32SC1, false)
+   </td>
+   <td align="center">
+    255.641 ms
+   </td>
+   <td align="center" style="color:green;">
+    149.089 ms
+   </td>
+   <td align="center" style="color:green;">
+    241.966 ms
+   </td>
+   <td align="center" style="color:green;">
+    135.380 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.71
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.89
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L2SQR, 32SC1, true)
+   </td>
+   <td align="center">
+    246.092 ms
+   </td>
+   <td align="center" style="color:green;">
+    141.611 ms
+   </td>
+   <td align="center">
+    246.364 ms
+   </td>
+   <td align="center" style="color:green;">
+    137.178 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.74
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.79
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L2SQR, 32FC1, false)
+   </td>
+   <td align="center">
+    452.648 ms
+   </td>
+   <td align="center">
+    459.528 ms
+   </td>
+   <td align="center">
+    443.846 ms
+   </td>
+   <td align="center" style="color:green;">
+    424.641 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.07
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_8U::Norm_Destination_CrossCheck::(NORM_L2SQR, 32FC1, true)
+   </td>
+   <td align="center">
+    417.029 ms
+   </td>
+   <td align="center" style="color:red;">
+    441.001 ms
+   </td>
+   <td align="center">
+    430.085 ms
+   </td>
+   <td align="center">
+    414.437 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.95
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    batchDistance_32F::Norm_CrossCheck::(NORM_L1, false)
+   </td>
+   <td align="center">
+    424.233 ms
+   </td>
+   <td align="center" style="color:red;">
+    468.922 ms
+   </td>
+   <td align="center">
+    436.326 ms
+   </td>
+   <td align="center" style="color:green;">
+    398.058 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.90
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.07
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_32F::Norm_CrossCheck::(NORM_L1, true)
+   </td>
+   <td align="center">
+    413.196 ms
+   </td>
+   <td align="center" style="color:red;">
+    435.233 ms
+   </td>
+   <td align="center">
+    432.119 ms
+   </td>
+   <td align="center">
+    409.366 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.95
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_32F::Norm_CrossCheck::(NORM_L2SQR, false)
+   </td>
+   <td align="center">
+    485.360 ms
+   </td>
+   <td align="center">
+    497.039 ms
+   </td>
+   <td align="center">
+    477.778 ms
+   </td>
+   <td align="center" style="color:green;">
+    458.878 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_32F::Norm_CrossCheck::(NORM_L2SQR, true)
+   </td>
+   <td align="center">
+    437.787 ms
+   </td>
+   <td align="center" style="color:red;">
+    463.919 ms
+   </td>
+   <td align="center">
+    453.500 ms
+   </td>
+   <td align="center">
+    430.794 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    batchDistance_Dest_32S::Norm_CrossCheck::(NORM_HAMMING2, false)
+   </td>
+   <td align="center">
+    269.482 ms
+   </td>
+   <td align="center">
+    264.358 ms
+   </td>
+   <td align="center">
+    261.207 ms
+   </td>
+   <td align="center" style="color:green;">
+    240.200 ms
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.12
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_Dest_32S::Norm_CrossCheck::(NORM_HAMMING2, true)
+   </td>
+   <td align="center">
+    250.530 ms
+   </td>
+   <td align="center">
+    251.160 ms
+   </td>
+   <td align="center">
+    254.602 ms
+   </td>
+   <td align="center">
+    243.600 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_Dest_32S::Norm_CrossCheck::(NORM_HAMMING, false)
+   </td>
+   <td align="center">
+    269.525 ms
+   </td>
+   <td align="center" style="color:green;">
+    83.301 ms
+   </td>
+   <td align="center">
+    258.857 ms
+   </td>
+   <td align="center" style="color:green;">
+    74.376 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.24
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.62
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_Dest_32S::Norm_CrossCheck::(NORM_HAMMING, true)
+   </td>
+   <td align="center">
+    265.656 ms
+   </td>
+   <td align="center" style="color:green;">
+    79.293 ms
+   </td>
+   <td align="center">
+    274.123 ms
+   </td>
+   <td align="center" style="color:green;">
+    75.192 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.35
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    3.53
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    batchDistance_L2::Source_CrossCheck::(8UC1, false)
+   </td>
+   <td align="center">
+    455.339 ms
+   </td>
+   <td align="center">
+    467.546 ms
+   </td>
+   <td align="center">
+    444.537 ms
+   </td>
+   <td align="center" style="color:green;">
+    430.870 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_L2::Source_CrossCheck::(8UC1, true)
+   </td>
+   <td align="center">
+    424.627 ms
+   </td>
+   <td align="center">
+    443.915 ms
+   </td>
+   <td align="center">
+    432.482 ms
+   </td>
+   <td align="center">
+    413.612 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_L2::Source_CrossCheck::(32FC1, false)
+   </td>
+   <td align="center">
+    480.988 ms
+   </td>
+   <td align="center">
+    488.078 ms
+   </td>
+   <td align="center" style="color:green;">
+    453.972 ms
+   </td>
+   <td align="center" style="color:green;">
+    444.715 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.08
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    batchDistance_L2::Source_CrossCheck::(32FC1, true)
+   </td>
+   <td align="center">
+    435.894 ms
+   </td>
+   <td align="center" style="color:red;">
+    460.426 ms
+   </td>
+   <td align="center">
+    448.877 ms
+   </td>
+   <td align="center">
+    428.535 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.95
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    detect::fast::("cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png", TYPE_5_8)
+   </td>
+   <td align="center">
+    16.622 ms
+   </td>
+   <td align="center" style="color:red;">
+    17.838 ms
+   </td>
+   <td align="center" style="color:red;">
+    17.600 ms
+   </td>
+   <td align="center">
+    16.572 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.93
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    detect::fast::("cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png", TYPE_7_12)
+   </td>
+   <td align="center">
+    34.116 ms
+   </td>
+   <td align="center" style="color:red;">
+    36.242 ms
+   </td>
+   <td align="center">
+    35.660 ms
+   </td>
+   <td align="center">
+    33.851 ms
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    detect::fast::("cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png", TYPE_9_16)
+   </td>
+   <td align="center">
+    37.555 ms
+   </td>
+   <td align="center">
+    38.992 ms
+   </td>
+   <td align="center">
+    38.776 ms
+   </td>
+   <td align="center">
+    37.455 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    detect::fast::("stitching/a3.png", TYPE_5_8)
+   </td>
+   <td align="center">
+    11.325 ms
+   </td>
+   <td align="center">
+    11.673 ms
+   </td>
+   <td align="center">
+    11.637 ms
+   </td>
+   <td align="center">
+    11.277 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    SLOWER
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    detect::fast::("stitching/a3.png", TYPE_7_12)
+   </td>
+   <td align="center">
+    19.997 ms
+   </td>
+   <td align="center">
+    20.615 ms
+   </td>
+   <td align="center">
+    20.591 ms
+   </td>
+   <td align="center">
+    19.759 ms
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    detect::fast::("stitching/a3.png", TYPE_9_16)
+   </td>
+   <td align="center">
+    24.868 ms
+   </td>
+   <td align="center">
+    25.354 ms
+   </td>
+   <td align="center">
+    25.699 ms
+   </td>
+   <td align="center">
+    24.157 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    faster
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    detect::orb::"cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png"
+   </td>
+   <td align="center">
+    45.042 ms
+   </td>
+   <td align="center">
+    47.069 ms
+   </td>
+   <td align="center">
+    46.560 ms
+   </td>
+   <td align="center">
+    44.443 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    detect::orb::"stitching/a3.png"
+   </td>
+   <td align="center">
+    32.460 ms
+   </td>
+   <td align="center">
+    33.656 ms
+   </td>
+   <td align="center">
+    33.619 ms
+   </td>
+   <td align="center">
+    32.228 ms
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center">
+    0.97
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    extract::orb::"cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png"
+   </td>
+   <td align="center">
+    49.039 ms
+   </td>
+   <td align="center" style="color:green;">
+    44.541 ms
+   </td>
+   <td align="center">
+    51.076 ms
+   </td>
+   <td align="center" style="color:green;">
+    42.981 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.10
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.14
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+    SLOWER
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    extract::orb::"stitching/a3.png"
+   </td>
+   <td align="center">
+    42.425 ms
+   </td>
+   <td align="center" style="color:green;">
+    39.341 ms
+   </td>
+   <td align="center">
+    44.127 ms
+   </td>
+   <td align="center" style="color:green;">
+    37.494 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.08
+   </td>
+   <td align="center">
+    0.96
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.13
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    full::orb::"cv/detectors_descriptors_evaluation/images_datasets/leuven/img1.png"
+   </td>
+   <td align="center">
+    85.463 ms
+   </td>
+   <td align="center" style="color:green;">
+    81.266 ms
+   </td>
+   <td align="center">
+    86.683 ms
+   </td>
+   <td align="center" style="color:green;">
+    80.626 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.05
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    full::orb::"stitching/a3.png"
+   </td>
+   <td align="center">
+    70.327 ms
+   </td>
+   <td align="center" style="color:green;">
+    66.270 ms
+   </td>
+   <td align="center">
+    70.804 ms
+   </td>
+   <td align="center" style="color:green;">
+    66.271 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+ </tbody>
+</table>
+</div>
+</body>
+</html>

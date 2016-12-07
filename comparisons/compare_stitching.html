@@ -1,0 +1,1261 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<title>Summary report for 33 tests from 4 test logs</title>
+<style type="text/css">
+html, body {font-family: Lucida Console, Courier New, Courier;font-size: 16px;color:#3e4758;}
+.tbl{background:none repeat scroll 0 0 #FFFFFF;border-collapse:collapse;font-family:"Lucida Sans Unicode","Lucida Grande",Sans-Serif;font-size:14px;margin:20px;text-align:left;width:480px;margin-left: auto;margin-right: auto;white-space:nowrap;}
+.tbl span{display:block;white-space:nowrap;}
+.tbl thead tr:last-child th {padding-bottom:5px;}
+.tbl tbody tr:first-child td {border-top:3px solid #6678B1;}
+.tbl th{border:none;color:#003399;font-size:16px;font-weight:normal;white-space:nowrap;padding:3px 10px;}
+.tbl td{border:none;border-bottom:1px solid #CCCCCC;color:#666699;padding:6px 8px;white-space:nowrap;}
+.tbl tbody tr:hover td{color:#000099;}
+.tbl caption{font:italic 16px "Trebuchet MS",Verdana,Arial,Helvetica,sans-serif;padding:0 0 5px;text-align:right;white-space:normal;}
+.firstingroup {border-top:2px solid #6678B1;}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script type="text/javascript">
+function abs(val) { return val < 0 ? -val : val }
+$(function(){
+  //generate filter rows
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+    var head = $("thead", tbl)
+    var filters = $("<tr></tr>")
+    var hasAny = false
+    $("tr:first th", head).each(function(colIdx, col) {
+      col = $(col)
+      var cell
+      var id = "t" + tblIdx + "r" + colIdx
+      if (col.hasClass("col_name")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_name' title='Regular expression for name filtering (&quot;resize.*640x480&quot; - resize tests on VGA resolution)'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_rel")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_rel' title='Filter out lines with a x-factor of acceleration less than Nx'></input></th>")
+        hasAny = true
+      }
+      else if (col.hasClass("col_cr")){
+        cell = $("<th><input id='" + id + "' name='" + id + "' type='text' style='width:100%' class='filter_col_cr' title='Filter out lines with a percentage of acceleration less than N%'></input></th>")
+        hasAny = true
+      }
+      else
+        cell = $("<th></th>")
+      cell.appendTo(filters)
+    })
+
+   if (hasAny){
+     $(tbl).wrap("<form id='form_t" + tblIdx + "' method='get' action=''></form>")
+     $("<input it='test' type='submit' value='Apply Filters' style='margin-left:10px;'></input>")
+       .appendTo($("th:last", filters.appendTo(head)))
+   }
+  })
+
+  //get filter values
+  var vars = []
+  var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+  for(var i = 0; i < hashes.length; ++i)
+  {
+     hash = hashes[i].split('=')
+     vars.push(decodeURIComponent(hash[0]))
+     vars[decodeURIComponent(hash[0])] = decodeURIComponent(hash[1]);
+  }
+
+  //set filter values
+  for(var i = 0; i < vars.length; ++i)
+     $("#" + vars[i]).val(vars[vars[i]])
+
+  //apply filters
+  $("div.tableFormatter table.tbl").each(function(tblIdx, tbl) {
+      filters = $("input:text", tbl)
+      var predicate = function(row) {return true;}
+      var empty = true
+      $.each($("input:text", tbl), function(i, flt) {
+         flt = $(flt)
+         var val = flt.val()
+         var pred = predicate;
+         if(val) {
+           empty = false
+           var colIdx = parseInt(flt.attr("id").slice(flt.attr("id").indexOf('r') + 1))
+           if(flt.hasClass("filter_col_name")) {
+              var re = new RegExp(val);
+              predicate = function(row) {
+                if (re.exec($(row.get(colIdx)).text()) == null)
+                  return false
+                return pred(row)
+          }
+           } else if(flt.hasClass("filter_col_rel")) {
+              var percent = parseFloat(val)
+              if (percent < 0) {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val >= 1 || val > 1+percent)
+                    return false
+                  return pred(row)
+            }
+              } else {
+                predicate = function(row) {
+                  var val = parseFloat($(row.get(colIdx)).text())
+                  if (!val || val < percent)
+                    return false
+                  return pred(row)
+            }
+              }
+           } else if(flt.hasClass("filter_col_cr")) {
+              var percent = parseFloat(val)
+              predicate = function(row) {
+                var val = parseFloat($(row.get(colIdx)).text())
+                if (!val || val < percent)
+                  return false
+                return pred(row)
+          }
+           }
+         }
+      });
+      if (!empty){
+         $("tbody tr", tbl).each(function (i, tbl_row) {
+            if(!predicate($("td", tbl_row)))
+               $(tbl_row).remove()
+         })
+         if($("tbody tr", tbl).length == 0) {
+           $("<tr><td colspan='"+$("thead tr:first th", tbl).length+"'>No results mathing your search criteria</td></tr>")
+             .appendTo($("tbody", tbl))
+         }
+      }
+  })
+})
+</script>
+</head>
+<body>
+<div class="tableFormatter">
+<table class="tbl">
+ <caption>Geometric mean</caption>
+ <thead>
+  <tr>
+   <th align="center" valign="top" class="col_name">
+    Name of Test
+   </th>
+   <th align="center" valign="top">
+    stitching<br/>build<br/>rpi3<br/>release
+   </th>
+   <th align="center" valign="top">
+    stitching<br/>build<br/>rpi3<br/>release<br/>fp
+   </th>
+   <th align="center" valign="top">
+    stitching<br/>build<br/>rpi3<br/>release<br/>tbb
+   </th>
+   <th align="center" valign="top">
+    stitching<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    stitching<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>stitching<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    stitching<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>stitching<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_rel">
+    stitching<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>stitching<br/>build<br/>rpi3<br/>release<br/>(x-factor)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    stitching<br/>build<br/>rpi3<br/>release<br/>fp<br/>vs<br/>stitching<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    stitching<br/>build<br/>rpi3<br/>release<br/>tbb<br/>vs<br/>stitching<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+   <th align="center" valign="top" class="col_name">
+    stitching<br/>build<br/>rpi3<br/>release<br/>fp<br/>tbb<br/>vs<br/>stitching<br/>build<br/>rpi3<br/>release<br/>(score)
+   </th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr class=" firstingroup">
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(640x480, CylindricalWarperType)
+   </td>
+   <td align="center">
+    80.571 ms
+   </td>
+   <td align="center">
+    80.691 ms
+   </td>
+   <td align="center">
+    80.917 ms
+   </td>
+   <td align="center">
+    81.581 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(640x480, PlaneWarperType)
+   </td>
+   <td align="center">
+    26.264 ms
+   </td>
+   <td align="center">
+    26.164 ms
+   </td>
+   <td align="center">
+    26.173 ms
+   </td>
+   <td align="center">
+    26.479 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+    SLOWER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(640x480, SphericalWarperType)
+   </td>
+   <td align="center">
+    137.427 ms
+   </td>
+   <td align="center">
+    138.392 ms
+   </td>
+   <td align="center">
+    137.586 ms
+   </td>
+   <td align="center">
+    139.144 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(1280x720, CylindricalWarperType)
+   </td>
+   <td align="center">
+    323.170 ms
+   </td>
+   <td align="center">
+    322.542 ms
+   </td>
+   <td align="center">
+    322.512 ms
+   </td>
+   <td align="center">
+    328.078 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(1280x720, PlaneWarperType)
+   </td>
+   <td align="center">
+    105.091 ms
+   </td>
+   <td align="center">
+    104.322 ms
+   </td>
+   <td align="center">
+    104.327 ms
+   </td>
+   <td align="center">
+    105.776 ms
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(1280x720, SphericalWarperType)
+   </td>
+   <td align="center">
+    550.477 ms
+   </td>
+   <td align="center">
+    549.200 ms
+   </td>
+   <td align="center">
+    549.246 ms
+   </td>
+   <td align="center">
+    557.259 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(1920x1080, CylindricalWarperType)
+   </td>
+   <td align="center">
+    727.214 ms
+   </td>
+   <td align="center">
+    725.804 ms
+   </td>
+   <td align="center">
+    725.716 ms
+   </td>
+   <td align="center">
+    734.820 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(1920x1080, PlaneWarperType)
+   </td>
+   <td align="center">
+    235.485 ms
+   </td>
+   <td align="center">
+    234.546 ms
+   </td>
+   <td align="center">
+    234.644 ms
+   </td>
+   <td align="center">
+    237.929 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+   <td align="center">
+    SLOWER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(1920x1080, SphericalWarperType)
+   </td>
+   <td align="center">
+    1238.349 ms
+   </td>
+   <td align="center">
+    1235.957 ms
+   </td>
+   <td align="center">
+    1236.000 ms
+   </td>
+   <td align="center">
+    1256.681 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(3840x2160, CylindricalWarperType)
+   </td>
+   <td align="center">
+    2908.470 ms
+   </td>
+   <td align="center">
+    2902.395 ms
+   </td>
+   <td align="center">
+    2902.171 ms
+   </td>
+   <td align="center">
+    2930.401 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(3840x2160, PlaneWarperType)
+   </td>
+   <td align="center">
+    941.213 ms
+   </td>
+   <td align="center">
+    937.787 ms
+   </td>
+   <td align="center">
+    937.887 ms
+   </td>
+   <td align="center">
+    948.375 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+   <td align="center">
+    SLOWER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_BuildMaps::OCL_StitchingWarpersFixture::(3840x2160, SphericalWarperType)
+   </td>
+   <td align="center">
+    4950.666 ms
+   </td>
+   <td align="center">
+    4940.600 ms
+   </td>
+   <td align="center">
+    4940.648 ms
+   </td>
+   <td align="center">
+    5011.011 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(640x480, CylindricalWarperType)
+   </td>
+   <td align="center">
+    96.665 ms
+   </td>
+   <td align="center">
+    95.898 ms
+   </td>
+   <td align="center">
+    95.201 ms
+   </td>
+   <td align="center">
+    97.120 ms
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(640x480, PlaneWarperType)
+   </td>
+   <td align="center">
+    43.066 ms
+   </td>
+   <td align="center">
+    42.345 ms
+   </td>
+   <td align="center">
+    41.755 ms
+   </td>
+   <td align="center">
+    41.871 ms
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(640x480, SphericalWarperType)
+   </td>
+   <td align="center">
+    153.015 ms
+   </td>
+   <td align="center">
+    151.525 ms
+   </td>
+   <td align="center">
+    152.885 ms
+   </td>
+   <td align="center">
+    154.314 ms
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(1280x720, CylindricalWarperType)
+   </td>
+   <td align="center">
+    372.948 ms
+   </td>
+   <td align="center">
+    374.466 ms
+   </td>
+   <td align="center">
+    380.113 ms
+   </td>
+   <td align="center">
+    379.771 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    slower
+   </td>
+   <td align="center">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(1280x720, PlaneWarperType)
+   </td>
+   <td align="center">
+    157.463 ms
+   </td>
+   <td align="center">
+    160.051 ms
+   </td>
+   <td align="center" style="color:red;">
+    167.444 ms
+   </td>
+   <td align="center" style="color:red;">
+    167.983 ms
+   </td>
+   <td align="center">
+    0.98
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.94
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(1280x720, SphericalWarperType)
+   </td>
+   <td align="center">
+    601.123 ms
+   </td>
+   <td align="center">
+    602.739 ms
+   </td>
+   <td align="center">
+    601.533 ms
+   </td>
+   <td align="center">
+    605.716 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(1920x1080, CylindricalWarperType)
+   </td>
+   <td align="center">
+    834.366 ms
+   </td>
+   <td align="center">
+    840.500 ms
+   </td>
+   <td align="center">
+    830.972 ms
+   </td>
+   <td align="center">
+    823.945 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    faster
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(1920x1080, PlaneWarperType)
+   </td>
+   <td align="center">
+    355.128 ms
+   </td>
+   <td align="center">
+    352.046 ms
+   </td>
+   <td align="center">
+    347.096 ms
+   </td>
+   <td align="center">
+    348.497 ms
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(1920x1080, SphericalWarperType)
+   </td>
+   <td align="center">
+    1337.640 ms
+   </td>
+   <td align="center">
+    1353.070 ms
+   </td>
+   <td align="center">
+    1343.783 ms
+   </td>
+   <td align="center">
+    1337.027 ms
+   </td>
+   <td align="center">
+    0.99
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(3840x2160, CylindricalWarperType)
+   </td>
+   <td align="center">
+    3338.863 ms
+   </td>
+   <td align="center">
+    3341.800 ms
+   </td>
+   <td align="center">
+    3305.386 ms
+   </td>
+   <td align="center">
+    3289.450 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.02
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(3840x2160, PlaneWarperType)
+   </td>
+   <td align="center">
+    1419.733 ms
+   </td>
+   <td align="center">
+    1408.306 ms
+   </td>
+   <td align="center">
+    1379.572 ms
+   </td>
+   <td align="center">
+    1360.255 ms
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    StitchingWarpers_Warp::OCL_StitchingWarpersFixture::(3840x2160, SphericalWarperType)
+   </td>
+   <td align="center">
+    5348.081 ms
+   </td>
+   <td align="center">
+    5347.054 ms
+   </td>
+   <td align="center">
+    5316.054 ms
+   </td>
+   <td align="center">
+    5303.964 ms
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+   <td align="center">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    a123::OCL_stitch::"orb"
+   </td>
+   <td align="center">
+    5810.872 ms
+   </td>
+   <td align="center">
+    5597.882 ms
+   </td>
+   <td align="center">
+    5798.958 ms
+   </td>
+   <td align="center">
+    5642.534 ms
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.03
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    a123::stitch::"orb"
+   </td>
+   <td align="center">
+    5754.775 ms
+   </td>
+   <td align="center" style="color:green;">
+    5466.774 ms
+   </td>
+   <td align="center">
+    5745.517 ms
+   </td>
+   <td align="center">
+    5549.143 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.05
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center">
+    1.04
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center">
+     
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    b12::OCL_stitch::"orb"
+   </td>
+   <td align="center">
+    2699.566 ms
+   </td>
+   <td align="center" style="color:green;">
+    2538.677 ms
+   </td>
+   <td align="center">
+    2670.893 ms
+   </td>
+   <td align="center" style="color:green;">
+    2537.502 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    b12::stitch::"orb"
+   </td>
+   <td align="center">
+    2678.398 ms
+   </td>
+   <td align="center" style="color:green;">
+    2530.231 ms
+   </td>
+   <td align="center">
+    2689.829 ms
+   </td>
+   <td align="center" style="color:green;">
+    2533.041 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center">
+    1.00
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr class=" firstingroup">
+   <td>
+    bestOf2NearestVectorFeatures::matchVector::("orb", 2)
+   </td>
+   <td align="center">
+    564.395 ms
+   </td>
+   <td align="center" style="color:green;">
+    524.944 ms
+   </td>
+   <td align="center">
+    559.624 ms
+   </td>
+   <td align="center" style="color:green;">
+    525.895 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.08
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.07
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+   <td align="center">
+    faster
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    FASTER
+   </td>
+  </tr>
+  <tr>
+   <td>
+    bestOf2NearestVectorFeatures::matchVector::("orb", 4)
+   </td>
+   <td align="center">
+    1247.759 ms
+   </td>
+   <td align="center" style="color:green;">
+    1180.904 ms
+   </td>
+   <td align="center" style="color:red;">
+    1413.091 ms
+   </td>
+   <td align="center" style="color:red;">
+    1341.842 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.06
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.88
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    0.93
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    SLOWER
+   </td>
+   <td align="center" style="color:red;font-weight: bold;">
+    slower
+   </td>
+  </tr>
+  <tr>
+   <td>
+    bestOf2NearestVectorFeatures::matchVector::("orb", 8)
+   </td>
+   <td align="center">
+    5713.442 ms
+   </td>
+   <td align="center" style="color:green;">
+    5210.443 ms
+   </td>
+   <td align="center">
+    5636.137 ms
+   </td>
+   <td align="center" style="color:green;">
+    5285.333 ms
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.10
+   </td>
+   <td align="center">
+    1.01
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    1.08
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+   <td align="center">
+     
+   </td>
+   <td align="center" style="color:green;font-weight: bold;">
+    faster
+   </td>
+  </tr>
+ </tbody>
+</table>
+</div>
+</body>
+</html>
