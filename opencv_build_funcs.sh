@@ -1,6 +1,8 @@
 #!/bin/bash
 
-dir=`dirname $0`
+pushd `dirname $0` > /dev/null
+abs_path=$PWD
+popd > /dev/null
 
 export OPENCV_TEST_DATA_PATH="/home/pi/opencv_extra/testdata"
 if [ ! -d "$OPENCV_TEST_DATA_PATH" ]; then
@@ -149,7 +151,7 @@ perf_compare_against () {
 			echo "Comparing module '$module' will go into ${src_dir}/compare_${module}.html"
 			xml_files=( ${perf_builds[@]/%//${module}_*xml} )
 			python modules/ts/misc/summary.py ${xml_files[@]} --with-score -o html > compare_${module}.html
-			${dir}/averageXFactor.pl compare_${module}.html
+			${abs_path}/averageXFactor.pl compare_${module}.html
 		done
 	else
 		echo "Will not compare peformance because of previous failures"
