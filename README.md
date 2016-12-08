@@ -31,7 +31,8 @@ Edit the *OpenCVCompareConfigs/opencv\_builds.sh*:
   * __perf\_compare\_against(build\_name\_to\_compare\_against)__ - compare performance test results.
 
 ### Build/Test Performance/Compare
-This can take days on Raspberry Pi3, mainly because of the performance tests.
+Each build takes ~ 40 minutes, but performance tests take ~ half a day per build.
+So this can take days on Raspberry Pi3, depending on the number of builds you also want to use for performance tests.
 ```
 OpenCVCompareConfigs/opencv_builds.sh
 ```
