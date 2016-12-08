@@ -23,7 +23,12 @@ Edit the *OpenCVCompareConfigs/opencv\_build\_funcs.sh*:
 Edit the *OpenCVCompareConfigs/opencv\_builds.sh*:
 * Edit/Delete/Add builds as the examples with the commented headers #1, #2, #3 and #4.
 * If not changed, the currently 4 builds will be used, all building packages and testing performance against the simple release build.
-* These are the supported bash functions: _build(build\_name, cmake\_command)_, _build\_pkg(build\_name)_, _perf\_test(build\_name)_, _report\_failures()_, _perf\_compare\_against(build\_name\_to\_compare\_against)_.
+* These are the supported bash functions:
+  * __build(build\_name, cmake\_command)__ - mkdir build\_name, use cmake and make inside this directory.
+  * __build\_pkg(build\_name)__ - build a deb package in the build\_name directory.
+  * __perf\_test(build\_name)__ - execute OpenCV performance tests in the build\_name directory.
+  * __report\_failures()__ - report failures detected for the functions above.
+  * __perf\_compare\_against(build\_name\_to\_compare\_against)__ - compare performance test results.
 
 ### Build/Test Performance/Compare
 This can take days on Raspberry Pi3, mainly because of the performance tests.
