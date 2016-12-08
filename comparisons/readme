@@ -1,0 +1,13 @@
+Content description
+===================
+The html files in this directory are the result of using the summary.py script from OpenCV.
+summary.py was used to compare builds of OpenCV on Raspberry Pi3.
+The base build with which 3 others were compared was a simple 'Release' configuration.
+The other 3 configurations compared against it were:
+1) Release + Floating Point
+2) Release + TBB
+3) Release + Floating Point + TBB
+
+To view a html file please download it and open it locally in your internet browser.
+
+Sagi.
